@@ -25,6 +25,7 @@ vibe-1103-acorn02-todo-memo/
 |------|------|
 | 메모 추가 | 입력 필드에 텍스트 입력 후 **추가** 버튼 또는 **Enter** 키로 목록에 추가 |
 | 메모 삭제 | 각 항목의 **삭제** 버튼으로 해당 메모만 제거 |
+| 유형 분류 | 메모 추가 시 유형(업무/개인/학습/기타)을 선택해 시각적으로 구분 |
 | 데이터 유지 | `localStorage`에 저장하여 새로고침 후에도 목록 유지 |
 
 ## 기술적 구현 내용
@@ -32,7 +33,7 @@ vibe-1103-acorn02-todo-memo/
 ### 1. 데이터 저장 (localStorage)
 
 - **저장 키**: `todo-memos`
-- **형식**: JSON 배열. 각 항목은 `{ id: string, text: string }` 구조.
+- **형식**: JSON 배열. 각 항목은 `{ id: string, text: string, type: 'work' | 'personal' | 'study' | 'other' }` 구조.
 - **ID 생성**: `Date.now().toString()`으로 고유 ID 부여.
 - **읽기/쓰기**: `localStorage.getItem()` / `localStorage.setItem()`으로 직렬화·역직렬화.
 
@@ -47,14 +48,14 @@ localStorage.setItem(STORAGE_KEY, JSON.stringify(memos));
 
 ### 2. DOM 조작 (JavaScript)
 
-- **요소 참조**: `getElementById`로 입력, 버튼, 목록, 개수 표시 영역 참조.
-- **동적 생성**: `createElement`로 `<li>`, `<span>`, `<button>` 생성 후 `appendChild`로 목록에 추가.
+- **요소 참조**: `getElementById`로 입력, 유형 선택 셀렉트 박스, 버튼, 목록, 개수 표시 영역 참조.
+- **동적 생성**: `createElement`로 `<li>`, `<div>`, `<span>`, `<button>` 생성 후 `appendChild`로 목록에 추가.
 - **목록 갱신**: `memoList.innerHTML = ''` 후 `getMemos()` 결과를 바탕으로 `renderList()`로 다시 그리기.
 - **빈 상태**: 메모가 없을 때 안내 문구만 표시하도록 분기 처리.
 
 ### 3. 이벤트 처리
 
-- **추가**: `addBtn` 클릭 이벤트, `memoInput`의 `keydown`에서 `Enter` 시 `addMemo()` 호출.
+- **추가**: `addBtn` 클릭 이벤트, `memoInput`의 `keydown`에서 `Enter` 시 `addMemo()` 호출. 이때 선택된 유형 값(`work` / `personal` / `study` / `other`)도 함께 저장.
 - **삭제**: 각 항목의 삭제 버튼에 `removeMemo(id)`를 연결해 해당 ID만 제외 후 저장·다시 렌더링.
 
 ### 4. CSS 및 반응형

@@ -1,9 +1,17 @@
 const STORAGE_KEY = 'todo-memos';
 
 const memoInput = document.getElementById('memoInput');
+const memoTypeSelect = document.getElementById('memoType');
 const addBtn = document.getElementById('addBtn');
 const memoList = document.getElementById('memoList');
 const countText = document.getElementById('countText');
+
+const TYPE_LABELS = {
+  work: '업무',
+  personal: '개인',
+  study: '학습',
+  other: '기타',
+};
 
 function getMemos() {
   const data = localStorage.getItem(STORAGE_KEY);
@@ -19,10 +27,21 @@ function updateCount(count) {
   countText.textContent = `${count}개의 메모`;
 }
 
-function createMemoItem(text, id) {
+function createMemoItem(text, id, typeKey = 'other') {
+  const safeTypeKey = TYPE_LABELS[typeKey] ? typeKey : 'other';
+  const typeLabel = TYPE_LABELS[safeTypeKey];
+
   const li = document.createElement('li');
   li.className = 'memo-item';
   li.dataset.id = id;
+  li.dataset.type = safeTypeKey;
+
+  const main = document.createElement('div');
+  main.className = 'memo-main';
+
+  const typeBadge = document.createElement('span');
+  typeBadge.className = `memo-type type-${safeTypeKey}`;
+  typeBadge.textContent = typeLabel;
 
   const span = document.createElement('span');
   span.className = 'memo-text';
@@ -34,7 +53,9 @@ function createMemoItem(text, id) {
   deleteBtn.textContent = '삭제';
   deleteBtn.addEventListener('click', () => removeMemo(id));
 
-  li.appendChild(span);
+  main.appendChild(typeBadge);
+  main.appendChild(span);
+  li.appendChild(main);
   li.appendChild(deleteBtn);
   return li;
 }
@@ -51,7 +72,7 @@ function renderList(memos) {
   }
 
   memos.forEach((memo) => {
-    memoList.appendChild(createMemoItem(memo.text, memo.id));
+    memoList.appendChild(createMemoItem(memo.text, memo.id, memo.type || 'other'));
   });
 }
 
@@ -59,10 +80,13 @@ function addMemo() {
   const text = memoInput.value.trim();
   if (!text) return;
 
+  const typeKey = memoTypeSelect?.value || 'other';
+
   const memos = getMemos();
   const newMemo = {
     id: Date.now().toString(),
     text: text,
+    type: typeKey,
   };
   memos.push(newMemo);
   saveMemos(memos);
